@@ -1,12 +1,17 @@
-import BookItem from "@/components/book-item";
-import { BookData } from "@/types";
-import delay from "@/util/delay";
-import { Suspense } from "react";
+import BookItem from '@/components/book-item';
+import { BookData } from '@/types';
+import delay from '@/util/delay';
+import { Suspense } from 'react';
 
-async function SearchResult({ q }: { q: string }) {
+async function SearchResult({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const resolvedParams = await searchParams;
   await delay(1500);
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_SERVER_URL}/book/search?q=${q}`
+    `${process.env.NEXT_PUBLIC_API_SERVER_URL}/book/search?q=${resolvedParams.q}`
   );
   if (!response.ok) {
     return <div>Failed to fetch books</div>;
@@ -21,15 +26,6 @@ async function SearchResult({ q }: { q: string }) {
   );
 }
 
-const SearchParamsResolver = async ({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) => {
-  const resolvedParams = await searchParams;
-  return <SearchResult q={resolvedParams.q || ""} />;
-};
-
 export default function Page({
   searchParams,
 }: {
@@ -39,7 +35,7 @@ export default function Page({
 }) {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <SearchParamsResolver searchParams={searchParams} />
+      <SearchResult searchParams={searchParams} />
     </Suspense>
   );
 }
