@@ -3,15 +3,10 @@ import { BookData } from '@/types';
 import delay from '@/util/delay';
 import { Suspense } from 'react';
 
-async function SearchResult({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
-  const resolvedParams = await searchParams;
+async function SearchResult({ q }: { q?: string }) {
   await delay(1500);
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_SERVER_URL}/book/search?q=${resolvedParams.q}`
+    `${process.env.NEXT_PUBLIC_API_SERVER_URL}/book/search?q=${q}`
   );
   if (!response.ok) {
     return <div>Failed to fetch books</div>;
@@ -26,16 +21,17 @@ async function SearchResult({
   );
 }
 
-export default function Page({
+export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{
     q?: string;
   }>;
 }) {
+  const { q } = await searchParams;
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <SearchResult searchParams={searchParams} />
+    <Suspense key={q || ''} fallback={<div>Loading...</div>}>
+      <SearchResult q={q || ''} />
     </Suspense>
   );
 }
